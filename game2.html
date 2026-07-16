@@ -2,60 +2,47 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Virus Hunter AR - Cybersecurity Training</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardware Hunter AR - TECHNOLOGY COMPUTER</title>
     
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- MediaPipe Hands -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
         :root {
-            --primary: #00f3ff;
-            --secondary: #bc13fe;
-            --bg-dark: #050a1f;
-            --glass-bg: rgba(5, 10, 31, 0.6);
-            --glass-border: rgba(0, 243, 255, 0.3);
-            --danger: #ff003c;
-            --success: #00ff66;
+            --cyber-bright-neon: #00ffff;
+            --cyber-pink: #ff007f;
+            --glass-panel: rgba(255, 255, 255, 0.9);
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: var(--bg-dark);
             font-family: 'Kanit', sans-serif;
+            background-color: #0c1020;
             overflow: hidden;
-            touch-action: none;
         }
 
         .font-cyber { font-family: 'Orbitron', sans-serif; }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
-            border-radius: 16px;
+        .cyber-hud {
+            background: var(--glass-panel);
+            backdrop-filter: blur(8px);
+            border: 2px solid var(--cyber-bright-neon);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
         }
 
         #video-layer {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* Mirror */
+            transform: scaleX(-1); /* กลับซ้ายขวาให้เป็นกระจกเงา */
             z-index: 1;
         }
         
@@ -74,625 +61,320 @@
 
         .interactive { pointer-events: auto; }
 
-        .btn-cyber {
-            background: linear-gradient(45deg, transparent 5%, var(--primary) 5%);
-            color: var(--bg-dark);
+        .btn-cyber-start {
+            background: linear-gradient(45deg, var(--cyber-bright-neon), #00ffaa);
+            color: #0c1020;
             font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
+            font-weight: 900;
             padding: 15px 40px;
-            font-size: 1.2rem;
-            border: none;
-            box-shadow: 4px 0 0 var(--secondary);
+            font-size: 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            border: none;
         }
-        .btn-cyber:hover:not(:disabled) {
-            background: linear-gradient(45deg, transparent 5%, var(--secondary) 5%);
-            box-shadow: 4px 0 0 var(--primary);
+        .btn-cyber-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--cyber-pink);
+            background: linear-gradient(45deg, var(--cyber-pink), #ff55bb);
             color: white;
         }
-
-        .glitch {
-            position: relative;
-            color: white;
-            text-shadow: 0.05em 0 0 rgba(255,0,0,0.75), -0.025em -0.05em 0 rgba(0,255,0,0.75), 0.025em 0.05em 0 rgba(0,0,255,0.75);
-            animation: glitch 500ms infinite;
-        }
-        @keyframes glitch {
-            0% { text-shadow: 0.05em 0 0 rgba(255,0,0,0.75), -0.05em -0.025em 0 rgba(0,255,0,0.75), -0.025em 0.05em 0 rgba(0,0,255,0.75); }
-            14% { text-shadow: 0.05em 0 0 rgba(255,0,0,0.75), -0.05em -0.025em 0 rgba(0,255,0,0.75), -0.025em 0.05em 0 rgba(0,0,255,0.75); }
-            15% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,0.75), 0.025em 0.025em 0 rgba(0,255,0,0.75), -0.05em -0.05em 0 rgba(0,0,255,0.75); }
-            49% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,0.75), 0.025em 0.025em 0 rgba(0,255,0,0.75), -0.05em -0.05em 0 rgba(0,0,255,0.75); }
-            50% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,0.75), 0.05em 0 0 rgba(0,255,0,0.75), 0 -0.05em 0 rgba(0,0,255,0.75); }
-            99% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,0.75), 0.05em 0 0 rgba(0,255,0,0.75), 0 -0.05em 0 rgba(0,0,255,0.75); }
-            100% { text-shadow: -0.025em 0 0 rgba(255,0,0,0.75), -0.025em -0.025em 0 rgba(0,255,0,0.75), -0.025em -0.05em 0 rgba(0,0,255,0.75); }
-        }
-
-        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-
-        .hp-bar-container { width: 200px; height: 15px; background: rgba(255,0,0,0.2); border: 1px solid var(--danger); border-radius: 8px; overflow: hidden; }
-        .hp-bar-fill { height: 100%; background: var(--danger); box-shadow: 0 0 10px var(--danger); transition: width 0.3s ease; }
-        
-        .gesture-card { border: 1px solid var(--primary); padding: 10px; border-radius: 8px; text-align: center; background: rgba(0,243,255,0.1); }
-        .gesture-card i { font-size: 2rem; color: var(--primary); margin-bottom: 5px; }
-
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Camera Source -->
     <video id="video-layer" autoplay playsinline></video>
     
-    <!-- Game Canvas -->
     <canvas id="game-canvas"></canvas>
 
-    <!-- UI Layer -->
-    <div id="ui-layer" class="flex flex-col justify-between p-4 md:p-6">
+    <div id="ui-layer" class="w-full h-full flex flex-col justify-between p-4 md:p-6">
         
-        <!-- Top HUD -->
         <div id="hud-top" class="hidden flex justify-between items-start w-full">
-            <div class="glass-panel p-3 min-w-[150px]">
-                <div class="text-sm text-gray-300">SCORE</div>
-                <div id="score-display" class="text-2xl font-cyber text-[var(--primary)] font-bold">0</div>
-                <div class="text-xs text-[var(--secondary)] mt-1">COMBO: x<span id="combo-display">1</span></div>
+            <div class="cyber-hud p-3 md:p-4 min-w-[120px] md:min-w-[160px] text-slate-800">
+                <div class="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider">SCORE</div>
+                <div id="score-display" class="text-2xl md:text-3xl font-cyber font-black text-slate-900">0</div>
             </div>
             
-            <div class="glass-panel p-3 text-center hidden md:block">
-                <div class="text-sm text-gray-300 font-cyber">LEVEL <span id="level-display">1</span></div>
-                <div id="level-name" class="text-lg font-bold text-white">VIRUS INFECTION</div>
+            <div class="cyber-hud p-2 md:p-3 text-center border-b-4 border-b-[var(--cyber-pink)] mx-2">
+                <div class="text-[10px] md:text-xs font-bold text-slate-500">ภารกิจตามล่าฮาร์ดแวร์</div>
+                <div id="target-display" class="text-base md:text-xl font-bold text-[var(--cyber-pink)]">กำลังโหลดโจทย์...</div>
             </div>
 
-            <div class="glass-panel p-3 flex flex-col items-end">
-                <div class="text-sm text-gray-300">SYSTEM INTEGRITY</div>
-                <div class="hp-bar-container mt-1 w-[120px] md:w-[200px]">
-                    <div id="hp-bar" class="hp-bar-fill" style="width: 100%;"></div>
+            <div class="cyber-hud p-3 md:p-4 min-w-[120px] md:min-w-[140px] text-right text-slate-800">
+                <div class="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider">TIME</div>
+                <div id="time-display" class="text-2xl md:text-3xl font-cyber font-black text-slate-900">60</div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="interactive absolute inset-0 flex flex-col items-center justify-center bg-slate-900 bg-opacity-85 z-50 p-4">
+            <div class="text-center max-w-xl p-6 md:p-8 bg-white rounded-2xl border-4 border-[var(--cyber-bright-neon)] shadow-2xl">
+                <h1 class="text-3xl md:text-5xl font-cyber font-black text-slate-900 mb-2">HARDWARE HUNTER</h1>
+                <p class="text-sm font-bold text-[var(--cyber-bright-neon)] bg-slate-900 py-1 px-3 rounded inline-block font-cyber mb-6 tracking-widest">TECHNOLOGY COMPUTER</p>
+                
+                <p class="text-slate-600 mb-6 font-medium text-sm md:text-base">
+                    ใช้ฝ่ามือสัมผัสอุปกรณ์ฮาร์ดแวร์ให้ตรงกับโจทย์ที่ได้รับ<br>
+                    <span class="text-amber-600 font-bold mt-2 inline-block"><i class="fas fa-hand-paper"></i> โปรดถอยห่างจากกล้องเพื่อให้ AI เห็นฝ่ามือชัดเจน</span>
+                </p>
+                
+                <div id="loading-box" class="flex flex-col items-center justify-center py-4">
+                    <i class="fas fa-microchip fa-spin text-4xl text-[var(--cyber-pink)] mb-3"></i>
+                    <p class="text-slate-700 font-bold animate-pulse">กำลังโหลด AI Model...</p>
                 </div>
-                <div id="status-display" class="text-xs text-green-400 mt-1"><i class="fas fa-shield-alt"></i> ONLINE</div>
-            </div>
-        </div>
 
-        <!-- Center Start/Menu Screen -->
-        <div id="start-screen" class="interactive absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg-dark)] z-50 transition-opacity duration-500">
-            <h1 class="text-5xl md:text-7xl font-cyber glitch mb-2 text-center">VIRUS HUNTER <span class="text-[var(--primary)]">AR</span></h1>
-            <p class="text-gray-300 text-lg md:text-xl mb-10 text-center px-4 max-w-2xl">
-                ระบบฝึกอบรมการป้องกันภัยคุกคามทางไซเบอร์ <br> <span class="text-sm text-[var(--primary)]">โปรดอนุญาตการเข้าถึงกล้องเพื่อเริ่มใช้งาน</span>
-            </p>
-            
-            <div id="loading-container" class="mb-6 flex flex-col items-center">
-                <i class="fas fa-circle-notch fa-spin text-[var(--primary)] text-3xl mb-2"></i>
-                <p id="loading-text" class="text-[var(--primary)] font-cyber">INITIALIZING NEURAL NETWORKS...</p>
+                <button id="btn-start" class="btn-cyber-start hidden" onclick="Game.start()">START SCAN</button>
             </div>
-
-            <button id="btn-start" class="btn-cyber hidden" onclick="GameEngine.start()">INITIALIZE SCAN</button>
-            
-            <div id="gesture-guide" class="hidden mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl px-4 text-white">
-                <div class="gesture-card"><i class="far fa-hand-paper"></i><br><b>แบมือ</b><br><span class="text-xs">เปิดโล่ป้องกัน</span></div>
-                <div class="gesture-card"><i class="far fa-hand-rock"></i><br><b>กำมือ</b><br><span class="text-xs">ระเบิด Bomb (Cooldown)</span></div>
-                <div class="gesture-card"><i class="fas fa-hand-point-up"></i><br><b>ชี้นิ้ว</b><br><span class="text-xs">เล็งเป้า (Aim)</span></div>
-                <div class="gesture-card"><i class="fas fa-hand-pointer"></i><br><b>แตะนิ้วโป้ง-ชี้</b><br><span class="text-xs">ยิง (Shoot)</span></div>
-            </div>
-        </div>
-
-        <!-- Feedback Overlay -->
-        <div id="feedback-layer" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <h2 id="center-message" class="text-4xl md:text-6xl font-cyber font-bold text-white opacity-0 transition-opacity duration-300 drop-shadow-[0_0_15px_rgba(0,243,255,0.8)]"></h2>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // AUDIO SYNTHESIZER
+        // 1. DATA & CLASSES
         // ==========================================
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const AudioSys = {
-            play: function(type) {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-
-                if (type === 'shoot') {
-                    osc.type = 'square'; osc.frequency.setValueAtTime(880, now); osc.frequency.exponentialRampToValueAtTime(110, now + 0.1);
-                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now); osc.stop(now + 0.1);
-                } else if (type === 'hit') {
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
-                    gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.15);
-                    osc.start(now); osc.stop(now + 0.15);
-                } else if (type === 'blast') {
-                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(10, now + 0.5);
-                    gain.gain.setValueAtTime(0.4, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    osc.start(now); osc.stop(now + 0.5);
-                } else if (type === 'damage') {
-                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(80, now); osc.frequency.linearRampToValueAtTime(40, now + 0.3);
-                    gain.gain.setValueAtTime(0.5, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                    osc.start(now); osc.stop(now + 0.3);
-                } else if (type === 'levelUp') {
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(659, now + 0.2); osc.frequency.setValueAtTime(880, now + 0.4);
-                    gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.6);
-                    osc.start(now); osc.stop(now + 0.6);
-                }
-            }
-        };
-
-        // ==========================================
-        // DATABASE & GOOGLE SHEETS
-        // ==========================================
-        const EDU_DB = {
-            'VIRUS': { name: 'Computer Virus', color: '#ff003c', score: 10, hp: 1, speed: 1.5, radius: 25, icon: '\uf088',
-                desc: 'ไวรัสคอมพิวเตอร์ โปรแกรมที่แฝงตัวมากับไฟล์อื่น เมื่อเปิดไฟล์ไวรัสจะทำงานและทำลายข้อมูล', prevent: 'ติดตั้งและอัปเดต Antivirus เสมอ' },
-            'WORM': { name: 'Worm', color: '#00ff66', score: 20, hp: 2, speed: 3, radius: 20, icon: '\uf188',
-                desc: 'หนอนอินเทอร์เน็ต สามารถทำสำเนาตัวเองและแพร่กระจายผ่านเครือข่ายได้เอง', prevent: 'อัปเดตระบบปฏิบัติการ (Patch) และเปิด Firewall' },
-            'TROJAN': { name: 'Trojan Horse', color: '#ffd700', score: 30, hp: 3, speed: 2, radius: 30, icon: '\uf542',
-                desc: 'ม้าโทรจัน หลอกผู้ใช้ว่าเป็นโปรแกรมที่มีประโยชน์ แต่แอบเปิดประตูหลังให้แฮกเกอร์', prevent: 'ไม่ดาวน์โหลดโปรแกรมจากแหล่งที่ไม่น่าเชื่อถือ' },
-            'RANSOMWARE': { name: 'Ransomware', color: '#ff6600', score: 50, hp: 4, speed: 1, radius: 35, icon: '\uf023',
-                desc: 'มัลแวร์เรียกค่าไถ่ เข้ารหัสลับล็อกไฟล์ของผู้ใช้ แล้วเรียกร้องเงินเพื่อปลดล็อก', prevent: 'สำรองข้อมูล (Backup) ไว้บน Cloud เสมอ' },
-            'ROOTKIT': { name: 'Rootkit', color: '#bc13fe', score: 100, hp: 15, speed: 1.2, radius: 50, icon: '\uf21b',
-                desc: 'Boss - ซ่อนตัวอยู่ลึกระดับระบบปฏิบัติการเพื่อหลบหลีกการตรวจจับ ควบคุมเครื่องได้เบ็ดเสร็จ', prevent: 'ใช้ OS แท้ และจำกัดสิทธิ์ Admin' }
-        };
-
-        const QUIZZES = [
-            { q: "มัลแวร์ชนิดใดที่ 'ล็อกไฟล์' และเรียกร้องเงิน?", choices: ["Virus", "Worm", "Ransomware", "Spyware"], ans: 2 },
-            { q: "Worm แตกต่างจาก Virus อย่างไร?", choices: ["แพร่กระจายผ่านเครือข่ายได้เอง", "แฝงตัวในไฟล์ Word", "ขโมยรหัสผ่าน", "ถูกทุกข้อ"], ans: 0 },
-            { q: "การหลอกว่าเป็นโปรแกรมฟรีแต่แฝงอันตราย คือพฤติกรรมของมัลแวร์ใด?", choices: ["Rootkit", "Trojan", "Ransomware", "Worm"], ans: 1 }
+        const HARDWARE_POOL = [
+            { name: 'CPU', type: 'PROCESSING', icon: '\uf2db', color: '#ff0055' },
+            { name: 'RAM', type: 'STORAGE', icon: '\uf538', color: '#00ccff' },
+            { name: 'SSD / HDD', type: 'STORAGE', icon: '\uf0a0', color: '#00ffaa' },
+            { name: 'Mouse', type: 'INPUT', icon: '\uf8cc', color: '#ffbb00' },
+            { name: 'Keyboard', type: 'INPUT', icon: '\uf11c', color: '#aa00ff' },
+            { name: 'Monitor', type: 'OUTPUT', icon: '\uf108', color: '#ff5500' },
+            { name: 'Printer', type: 'OUTPUT', icon: '\uf02f', color: '#eeff00' }
         ];
 
-        // 🛑 กรุณาตั้งค่า URL ของ Google Apps Script ที่ Deploy เป็น Web App ไว้ตรงนี้
-        const GOOGLE_APP_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+        const MISSIONS = ['INPUT', 'OUTPUT', 'STORAGE', 'PROCESSING'];
 
-        async function saveScoreToGoogleSheet(playerName, score, level) {
-            try {
-                if(GOOGLE_APP_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
-                    console.log("Mock Saving to Leaderboard:", playerName, score);
-                    return;
-                }
-                await fetch(GOOGLE_APP_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Use no-cors for simple Google Script requests
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: playerName, score: score, level: level })
-                });
-            } catch (err) { console.error("Error saving score:", err); }
-        }
-
-        // ==========================================
-        // ENGINE CLASSES
-        // ==========================================
-        const Utils = {
-            dist: (p1, p2) => Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)),
-            random: (min, max) => Math.random() * (max - min) + min
-        };
-
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x; this.y = y;
-                this.vx = (Math.random() - 0.5) * 10; this.vy = (Math.random() - 0.5) * 10;
-                this.life = 1.0; this.decay = Math.random() * 0.05 + 0.02;
-                this.color = color; this.size = Math.random() * 5 + 2;
+        class FallingItem {
+            constructor(canvasW) {
+                const sample = HARDWARE_POOL[Math.floor(Math.random() * HARDWARE_POOL.length)];
+                this.name = sample.name; this.type = sample.type;
+                this.icon = sample.icon; this.color = sample.color;
+                
+                this.radius = 45; // ขยายขนาดไอเทมเล็กน้อย
+                this.x = Math.random() * (canvasW - this.radius * 3) + (this.radius * 1.5);
+                this.y = -80;
+                this.speed = Math.random() * 2.5 + 2; 
             }
-            update() { this.x += this.vx; this.y += this.vy; this.life -= this.decay; }
+            update() { this.y += this.speed; }
             draw(ctx) {
-                ctx.globalAlpha = Math.max(0, this.life); ctx.fillStyle = this.color;
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
-                ctx.globalAlpha = 1.0;
+                ctx.save(); ctx.translate(this.x, this.y);
+                
+                // กรอบโฮโลแกรม
+                ctx.shadowBlur = 10; ctx.shadowColor = this.color;
+                ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+                ctx.strokeStyle = this.color; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+
+                // ไอคอน
+                ctx.shadowBlur = 0; ctx.fillStyle = "#1e293b";
+                ctx.font = "900 35px 'Font Awesome 6 Free'";
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(this.icon, 0, -8);
+
+                // ชื่อ
+                ctx.fillStyle = this.color; ctx.font = "bold 14px 'Kanit'";
+                ctx.fillText(this.name, 0, 24);
+                ctx.restore();
             }
         }
 
+        // เอฟเฟกต์ตัวเลขคะแนนเด้งขึ้นมา
         class FloatingText {
             constructor(x, y, text, color) {
                 this.x = x; this.y = y; this.text = text; this.color = color;
                 this.life = 1.0; this.vy = -1.5;
             }
-            update() { this.y += this.vy; this.life -= 0.02; }
+            update() { this.y += this.vy; this.life -= 0.03; }
             draw(ctx) {
+                ctx.save();
                 ctx.globalAlpha = Math.max(0, this.life);
-                ctx.fillStyle = this.color; ctx.font = "bold 24px 'Orbitron'";
+                ctx.fillStyle = this.color;
+                ctx.font = "900 30px 'Orbitron', 'Kanit'";
+                ctx.shadowBlur = 4; ctx.shadowColor = "#fff";
                 ctx.fillText(this.text, this.x, this.y);
-                ctx.globalAlpha = 1.0;
-            }
-        }
-
-        class Enemy {
-            constructor(type, canvasW, canvasH) {
-                this.type = type;
-                const data = EDU_DB[type];
-                this.color = data.color; this.hp = data.hp; this.maxHp = data.hp;
-                this.speed = data.speed; this.radius = data.radius; this.icon = data.icon;
-                this.x = Utils.random(50, canvasW - 50);
-                this.y = -50; // Start off-screen top
-                this.vx = (Math.random() - 0.5) * this.speed;
-                this.vy = this.speed;
-                this.pulse = 0;
-            }
-            update(canvasW, canvasH) {
-                this.x += this.vx; this.y += this.vy;
-                if (this.x < this.radius || this.x > canvasW - this.radius) this.vx *= -1;
-                this.pulse += 0.1;
-                return this.y > canvasH + this.radius; // Returns true if off-screen bottom
-            }
-            draw(ctx) {
-                const r = this.radius + Math.sin(this.pulse) * 2;
-                // Glow
-                ctx.shadowBlur = 15; ctx.shadowColor = this.color;
-                ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.strokeStyle = this.color; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                // Icon (FontAwesome)
-                ctx.shadowBlur = 0; ctx.fillStyle = this.color;
-                ctx.font = `900 ${r}px 'Font Awesome 6 Free'`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(this.icon, this.x, this.y);
-                // HP Bar (if damaged)
-                if (this.hp < this.maxHp) {
-                    ctx.fillStyle = "red"; ctx.fillRect(this.x - r, this.y - r - 10, r * 2, 5);
-                    ctx.fillStyle = "#00ff66"; ctx.fillRect(this.x - r, this.y - r - 10, (r * 2) * (this.hp / this.maxHp), 5);
-                }
+                ctx.restore();
             }
         }
 
         // ==========================================
-        // GAME ENGINE & MAIN LOGIC
+        // 2. GAME ENGINE
         // ==========================================
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const videoElement = document.getElementById('video-layer');
 
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        const GameEngine = {
-            state: 'MENU', // MENU, PLAYING, QUIZ, GAMEOVER
-            score: 0, combo: 0, hp: 100, level: 1, enemiesKilled: 0,
-            enemies: [], particles: [], texts: [],
-            pointer: { x: canvas.width/2, y: canvas.height/2, active: false, gesture: 'none' },
-            lastShotTime: 0, bombCooldown: 0,
-            
+        const Game = {
+            isActive: false, score: 0, timeLeft: 60, currentMission: '',
+            items: [], texts: [],
+            pointer: { x: -100, y: -100, active: false },
+            timerInterval: null, missionInterval: null,
+
             start: function() {
-                document.getElementById('start-screen').classList.add('opacity-0');
-                setTimeout(() => {
-                    document.getElementById('start-screen').classList.add('hidden');
-                    document.getElementById('hud-top').classList.remove('hidden');
-                    this.state = 'PLAYING';
-                    this.score = 0; this.hp = 100; this.level = 1; this.enemiesKilled = 0; this.combo = 0;
-                    this.enemies = [];
-                    this.updateUI();
-                    AudioSys.play('levelUp');
-                    this.showMessage("LEVEL 1: VIRUS INFECTION");
-                }, 500);
-            },
-
-            spawnEnemy: function() {
-                if (this.state !== 'PLAYING') return;
-                const types = ['VIRUS'];
-                if (this.level >= 2) types.push('WORM');
-                if (this.level >= 3) types.push('TROJAN');
-                if (this.level >= 4) types.push('RANSOMWARE');
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('hud-top').classList.remove('hidden');
                 
-                let typeToSpawn = types[Math.floor(Math.random() * types.length)];
-                if (this.level >= 5 && Math.random() < 0.1 && !this.enemies.find(e => e.type === 'ROOTKIT')) {
-                    typeToSpawn = 'ROOTKIT'; // 10% chance for Boss on level 5
-                }
-                this.enemies.push(new Enemy(typeToSpawn, canvas.width, canvas.height));
-            },
+                this.isActive = true; this.score = 0; this.timeLeft = 60;
+                this.items = []; this.texts = [];
+                this.changeMission();
 
-            shoot: function() {
-                const now = Date.now();
-                if (now - this.lastShotTime < 300) return; // Fire rate limit
-                this.lastShotTime = now;
-                AudioSys.play('shoot');
-
-                // Visual shoot indicator
-                this.particles.push(new Particle(this.pointer.x, this.pointer.y, '#00f3ff'));
-
-                for (let i = this.enemies.length - 1; i >= 0; i--) {
-                    let e = this.enemies[i];
-                    if (Utils.dist(this.pointer, e) < e.radius * 1.5) {
-                        e.hp--;
-                        AudioSys.play('hit');
-                        for(let k=0; k<5; k++) this.particles.push(new Particle(e.x, e.y, e.color));
-                        
-                        if (e.hp <= 0) {
-                            this.killEnemy(e, i);
-                        }
-                        break; // Only hit one per shot
-                    }
-                }
-            },
-
-            useBomb: function() {
-                if (this.bombCooldown > 0) return;
-                AudioSys.play('blast');
-                this.bombCooldown = 300; // frames
-                this.showMessage("SYSTEM BOMB DEPLOYED!");
-                
-                // Explode all
-                this.enemies.forEach(e => {
-                    for(let k=0; k<10; k++) this.particles.push(new Particle(e.x, e.y, e.color));
-                    this.score += EDU_DB[e.type].score;
-                });
-                this.enemies = [];
-                this.updateUI();
-            },
-
-            killEnemy: function(e, index) {
-                this.enemies.splice(index, 1);
-                this.combo++;
-                let points = EDU_DB[e.type].score * (1 + (this.combo * 0.1));
-                this.score += Math.floor(points);
-                this.texts.push(new FloatingText(e.x, e.y, `+${Math.floor(points)}`, e.color));
-                
-                // Huge explosion
-                for(let k=0; k<15; k++) this.particles.push(new Particle(e.x, e.y, e.color));
-                
-                this.enemiesKilled++;
-                this.updateUI();
-                
-                // Pause for Education randomly (20% chance on kill) or boss kill
-                if (e.type === 'ROOTKIT' || Math.random() < 0.2) {
-                    this.showEducation(e.type);
-                } else if (this.enemiesKilled % 10 === 0) {
-                    this.levelUp();
-                }
-            },
-
-            damageBase: function() {
-                if(this.pointer.gesture === 'open') {
-                    // Shield active
-                    this.texts.push(new FloatingText(canvas.width/2, canvas.height - 50, "BLOCKED!", "#00f3ff"));
-                    return; 
-                }
-                this.hp -= 10;
-                this.combo = 0;
-                AudioSys.play('damage');
-                document.body.classList.add('shake');
-                setTimeout(() => document.body.classList.remove('shake'), 500);
-                this.updateUI();
-                if (this.hp <= 0) this.gameOver();
-            },
-
-            updateUI: function() {
                 document.getElementById('score-display').innerText = this.score;
-                document.getElementById('combo-display').innerText = this.combo;
-                document.getElementById('hp-bar').style.width = Math.max(0, this.hp) + '%';
-                if(this.hp < 30) document.getElementById('hp-bar').style.background = '#ff003c';
+                document.getElementById('time-display').innerText = this.timeLeft;
+
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('time-display').innerText = this.timeLeft;
+                    if(this.timeLeft <= 0) this.endGame();
+                }, 1000);
+
+                this.missionInterval = setInterval(() => { this.changeMission(); }, 12000);
             },
 
-            showMessage: function(msg) {
-                const el = document.getElementById('center-message');
-                el.innerText = msg; el.classList.remove('opacity-0');
-                setTimeout(() => el.classList.add('opacity-0'), 2000);
-            },
-
-            showEducation: function(type) {
-                const db = EDU_DB[type];
-                this.state = 'EDU';
-                Swal.fire({
-                    title: `<span style="color:${db.color}">${db.name} Detected!</span>`,
-                    html: `<div class="text-left"><b>ลักษณะ:</b> ${db.desc}<br><br><b>วิธีป้องกัน:</b> <span class="text-green-500">${db.prevent}</span></div>`,
-                    background: 'var(--glass-bg)',
-                    color: '#fff',
-                    confirmButtonText: 'รับทราบ (Resume)',
-                    confirmButtonColor: 'var(--primary)',
-                    backdrop: `rgba(0,0,0,0.8)`
-                }).then(() => { this.state = 'PLAYING'; });
-            },
-
-            levelUp: function() {
-                this.state = 'QUIZ';
-                AudioSys.play('levelUp');
-                const q = QUIZZES[Math.floor(Math.random() * QUIZZES.length)];
+            changeMission: function() {
+                let newMission;
+                // สุ่มโจทย์ใหม่ที่ไม่ซ้ำกับโจทย์เดิม
+                do { newMission = MISSIONS[Math.floor(Math.random() * MISSIONS.length)]; } 
+                while (newMission === this.currentMission && MISSIONS.length > 1);
                 
-                let htmlChoices = '';
-                q.choices.forEach((c, i) => {
-                    htmlChoices += `<button class="btn-cyber w-full mb-2 text-sm" onclick="Swal.clickConfirm()" data-ans="${i}">${c}</button>`;
-                });
-
-                Swal.fire({
-                    title: 'SYSTEM FIREWALL QUIZ',
-                    text: q.q,
-                    background: 'var(--bg-dark)', color: '#fff',
-                    input: 'radio',
-                    inputOptions: q.choices,
-                    inputValidator: (value) => {
-                        if (!value) return 'คุณต้องเลือกคำตอบเพื่ออัปเกรดระบบ!';
-                    },
-                    confirmButtonText: 'ยืนยันคำตอบ', confirmButtonColor: 'var(--primary)',
-                    allowOutsideClick: false
-                }).then((result) => {
-                    if (parseInt(result.value) === q.ans) {
-                        Swal.fire({icon: 'success', title: 'CORRECT!', text: '+500 Bonus Points', background: 'var(--bg-dark)', color: '#fff'})
-                        .then(() => {
-                            this.score += 500;
-                            this.level++;
-                            document.getElementById('level-display').innerText = this.level;
-                            this.showMessage(`LEVEL ${this.level} UNLOCKED`);
-                            this.state = 'PLAYING';
-                            this.updateUI();
-                        });
-                    } else {
-                        Swal.fire({icon: 'error', title: 'INCORRECT', text: 'ระบบถูกเจาะ! HP ลดลง', background: 'var(--bg-dark)', color: '#fff'})
-                        .then(() => {
-                            this.hp -= 20;
-                            this.level++;
-                            document.getElementById('level-display').innerText = this.level;
-                            this.showMessage(`LEVEL ${this.level} START`);
-                            this.state = 'PLAYING';
-                            this.updateUI();
-                            if(this.hp <= 0) this.gameOver();
-                        });
-                    }
-                });
+                this.currentMission = newMission;
+                document.getElementById('target-display').innerText = `จับ: ${this.currentMission} Device`;
+                
+                // เอฟเฟกต์กระพริบตอนเปลี่ยนโจทย์
+                const targetDisplay = document.getElementById('target-display');
+                targetDisplay.classList.add('animate-bounce');
+                setTimeout(() => targetDisplay.classList.remove('animate-bounce'), 1000);
             },
 
-            gameOver: async function() {
-                this.state = 'GAMEOVER';
-                document.getElementById('hud-top').classList.add('hidden');
-                
-                const { value: playerName } = await Swal.fire({
-                    title: 'SYSTEM FAILURE',
-                    text: `SCORE: ${this.score} | LEVEL: ${this.level}`,
-                    input: 'text',
-                    inputLabel: 'Enter Agent Name',
-                    inputPlaceholder: 'Your Name',
-                    background: 'var(--bg-dark)', color: '#ff003c',
-                    confirmButtonText: 'SAVE DATA', confirmButtonColor: '#ff003c',
-                    allowOutsideClick: false
-                });
+            // [อัปเดตแกนหลัก] ระบบตรวจสอบการชนที่ขยายรัศมีกว้างขึ้น
+            checkCollision: function(item) {
+                if (!this.pointer.active) return false;
+                const dist = Math.sqrt(Math.pow(this.pointer.x - item.x, 2) + Math.pow(this.pointer.y - item.y, 2));
+                // ขยายรัศมี hitbox จาก 20 เป็น 50 เพื่อให้ชนง่ายขึ้นมาก
+                return dist < (item.radius + 50); 
+            },
 
-                if (playerName) {
-                    await saveScoreToGoogleSheet(playerName, this.score, this.level);
-                    Swal.fire({ title: 'Data Uploaded', text: 'Score saved to Server', icon: 'success', background: 'var(--bg-dark)', color: '#fff'})
-                    .then(() => location.reload());
-                } else {
+            endGame: function() {
+                this.isActive = false;
+                clearInterval(this.timerInterval); clearInterval(this.missionInterval);
+                setTimeout(() => {
+                    alert(`หมดเวลา! ภารกิจเสร็จสิ้น\nคุณทำได้ทั้งหมด: ${this.score} คะแนน`);
                     location.reload();
-                }
+                }, 100);
             },
 
             loop: function() {
                 requestAnimationFrame(() => this.loop());
-                
-                // Clear Canvas (Transparent)
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                if (this.state !== 'PLAYING') return;
+                if (!this.isActive) return;
 
-                // Spawner
-                if (Math.random() < 0.02 * (1 + this.level*0.2)) this.spawnEnemy();
-                if (this.bombCooldown > 0) this.bombCooldown--;
+                // สุ่มปล่อยไอเทม
+                if (Math.random() < 0.025) this.items.push(new FallingItem(canvas.width));
 
-                // Update & Draw Enemies
-                for (let i = this.enemies.length - 1; i >= 0; i--) {
-                    let e = this.enemies[i];
-                    let isOffScreen = e.update(canvas.width, canvas.height);
-                    e.draw(ctx);
-                    if (isOffScreen) {
-                        this.enemies.splice(i, 1);
-                        this.damageBase();
-                    }
-                }
-
-                // Update & Draw Particles
-                for (let i = this.particles.length - 1; i >= 0; i--) {
-                    let p = this.particles[i]; p.update(); p.draw(ctx);
-                    if (p.life <= 0) this.particles.splice(i, 1);
-                }
-
-                // Update & Draw Texts
+                // อัปเดต Floating Texts (ตัวเลขคะแนนเด้ง)
                 for (let i = this.texts.length - 1; i >= 0; i--) {
                     let t = this.texts[i]; t.update(); t.draw(ctx);
                     if (t.life <= 0) this.texts.splice(i, 1);
                 }
 
-                // Draw Pointer (Hand tracking crosshair)
-                if (this.pointer.active) {
-                    ctx.beginPath();
-                    ctx.arc(this.pointer.x, this.pointer.y, 20, 0, Math.PI * 2);
-                    ctx.strokeStyle = this.pointer.gesture === 'pinch' ? '#ff003c' : (this.pointer.gesture === 'open' ? '#00ff66' : '#00f3ff');
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    // Shield visual
-                    if(this.pointer.gesture === 'open') {
-                        ctx.beginPath();
-                        ctx.arc(this.pointer.x, this.pointer.y, 60, 0, Math.PI * 2);
-                        ctx.fillStyle = "rgba(0, 255, 102, 0.2)";
-                        ctx.fill(); ctx.stroke();
+                // อัปเดตไอเทมฮาร์ดแวร์
+                for (let i = this.items.length - 1; i >= 0; i--) {
+                    let item = this.items[i];
+                    item.update();
+                    item.draw(ctx);
+
+                    if (this.checkCollision(item)) {
+                        if (item.type === this.currentMission) {
+                            this.score += 10;
+                            this.texts.push(new FloatingText(item.x, item.y, "+10", "#00ffaa"));
+                        } else {
+                            this.score = Math.max(0, this.score - 5);
+                            this.texts.push(new FloatingText(item.x, item.y, "-5", "#ff0055"));
+                        }
+                        document.getElementById('score-display').innerText = this.score;
+                        this.items.splice(i, 1); // ลบไอเทมทิ้งทันทีเมื่อชน
+                        continue;
                     }
+
+                    if (item.y > canvas.height + 100) this.items.splice(i, 1);
+                }
+
+                // วาดเป้าเล็งสีฟ้าที่ตามฝ่ามือ
+                if (this.pointer.active) {
+                    ctx.save();
+                    ctx.shadowBlur = 15; ctx.shadowColor = "#00ffff";
+                    ctx.strokeStyle = "#00ffff"; ctx.fillStyle = "rgba(0, 255, 255, 0.4)";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(this.pointer.x, this.pointer.y, 30, 0, Math.PI * 2);
+                    ctx.fill(); ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(this.pointer.x - 40, this.pointer.y); ctx.lineTo(this.pointer.x + 40, this.pointer.y);
+                    ctx.moveTo(this.pointer.x, this.pointer.y - 40); ctx.lineTo(this.pointer.x, this.pointer.y + 40);
+                    ctx.stroke();
+                    ctx.restore();
                 }
             }
         };
 
-        // Start Loop
-        GameEngine.loop();
-
+        Game.loop();
 
         // ==========================================
-        // MEDIAPIPE HAND TRACKING INTEGRATION
+        // 3. AI HAND TRACKING & CALIBRATION
         // ==========================================
-        const hands = new Hands({locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }});
-        hands.setOptions({
-            maxNumHands: 1,
-            modelComplexity: 1,
-            minDetectionConfidence: 0.7,
-            minTrackingConfidence: 0.7
-        });
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
 
         hands.onResults((results) => {
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 const landmarks = results.multiHandLandmarks[0];
-                
-                // Note: Video is CSS mirrored (scaleX(-1)), so we must mirror X coordinate on canvas
-                const rawX = landmarks[9].x; // Use Middle Finger MCP as center pointer
+                const rawX = landmarks[9].x; // จุดข้อต่อกลางมือ
                 const rawY = landmarks[9].y;
                 
-                GameEngine.pointer.x = (1 - rawX) * canvas.width; // Mirrored X
-                GameEngine.pointer.y = rawY * canvas.height;
-                GameEngine.pointer.active = true;
+                // [อัปเดตแกนหลัก] ระบบคำนวณชดเชยสัดส่วนหน้าจอ (Aspect Ratio Calibration)
+                // แก้ปัญหาเป้าเล็งสีฟ้าไม่ตรงกับตำแหน่งมือจริงเมื่อหน้าจอไม่ใช่ 16:9
+                const videoRatio = 1280 / 720;
+                const windowRatio = window.innerWidth / window.innerHeight;
+                let drawWidth, drawHeight, offsetX, offsetY;
 
-                // Gesture Recognition
-                const thumbTip = landmarks[4];
-                const indexTip = landmarks[8];
-                const middleTip = landmarks[12];
-                const ringTip = landmarks[16];
-                const pinkyTip = landmarks[20];
-                const mcpList = [landmarks[5], landmarks[9], landmarks[13], landmarks[17]];
-
-                // Distance between thumb and index for PINCH (Shoot)
-                const pinchDist = Math.sqrt(Math.pow(thumbTip.x - indexTip.x, 2) + Math.pow(thumbTip.y - indexTip.y, 2));
-                
-                // Check if fingers are folded (y > mcp y implies folded down in camera space)
-                const isFingersClosed = (middleTip.y > landmarks[9].y && ringTip.y > landmarks[13].y && pinkyTip.y > landmarks[17].y);
-                const isAllOpen = (indexTip.y < landmarks[5].y && middleTip.y < landmarks[9].y && ringTip.y < landmarks[13].y && pinkyTip.y < landmarks[17].y);
-
-                let gesture = 'none';
-
-                if (pinchDist < 0.05) {
-                    gesture = 'pinch';
-                    GameEngine.shoot();
-                } else if (isAllOpen) {
-                    gesture = 'open'; // Shield
-                } else if (isFingersClosed && indexTip.y > landmarks[5].y) {
-                    gesture = 'fist';
-                    GameEngine.useBomb();
-                } else if (indexTip.y < landmarks[5].y && isFingersClosed) {
-                    gesture = 'point'; // Just aiming
+                if (windowRatio > videoRatio) {
+                    drawWidth = window.innerWidth;
+                    drawHeight = window.innerWidth / videoRatio;
+                    offsetX = 0;
+                    offsetY = -(drawHeight - window.innerHeight) / 2;
+                } else {
+                    drawHeight = window.innerHeight;
+                    drawWidth = window.innerHeight * videoRatio;
+                    offsetX = -(drawWidth - window.innerWidth) / 2;
+                    offsetY = 0;
                 }
 
-                GameEngine.pointer.gesture = gesture;
-
+                // สลับแกน X (กระจกเงา) และคำนวณตำแหน่งใหม่
+                Game.pointer.x = ((1 - rawX) * drawWidth) + offsetX;
+                Game.pointer.y = (rawY * drawHeight) + offsetY;
+                Game.pointer.active = true;
             } else {
-                GameEngine.pointer.active = false;
+                Game.pointer.active = false;
             }
         });
 
-        // Initialize Camera
         const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await hands.send({image: videoElement});
-            },
-            width: 1280,
-            height: 720
+            onFrame: async () => { await hands.send({image: videoElement}); },
+            width: 1280, height: 720
         });
 
-        // Start Camera and reveal Start button
         camera.start().then(() => {
-            document.getElementById('loading-container').classList.add('hidden');
+            document.getElementById('loading-box').classList.add('hidden');
             document.getElementById('btn-start').classList.remove('hidden');
-            document.getElementById('gesture-guide').classList.remove('hidden');
         }).catch(err => {
-            document.getElementById('loading-text').innerText = "CAMERA ACCESS DENIED or NOT FOUND";
-            document.getElementById('loading-text').style.color = "red";
+            alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้องในเบราว์เซอร์");
         });
-
     </script>
 </body>
 </html>
