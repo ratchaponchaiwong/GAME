@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardware Hunter AR - TECHNOLOGY COMPUTER</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Kanit:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --cyber-bright-neon: #00ffff;
+            --cyber-pink: #ff007f;
+            --glass-panel: rgba(255, 255, 255, 0.9);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Kanit', sans-serif;
+            background-color: #0c1020;
+            overflow: hidden;
+        }
+
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+
+        .cyber-hud {
+            background: var(--glass-panel);
+            backdrop-filter: blur(8px);
+            border: 2px solid var(--cyber-bright-neon);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+        }
+
+        #video-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* กลับซ้ายขวาให้เป็นกระจกเงา */
+            z-index: 1;
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .interactive { pointer-events: auto; }
+
+        .btn-cyber-start {
+            background: linear-gradient(45deg, var(--cyber-bright-neon), #00ffaa);
+            color: #0c1020;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-cyber-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--cyber-pink);
+            background: linear-gradient(45deg, var(--cyber-pink), #ff55bb);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <video id="video-layer" autoplay playsinline></video>
+    
+    <canvas id="game-canvas"></canvas>
+
+    <div id="ui-layer" class="w-full h-full flex flex-col justify-between p-4 md:p-6">
+        
+        <div id="hud-top" class="hidden flex justify-between items-start w-full">
+            <div class="cyber-hud p-3 md:p-4 min-w-[120px] md:min-w-[160px] text-slate-800">
+                <div class="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider">SCORE</div>
+                <div id="score-display" class="text-2xl md:text-3xl font-cyber font-black text-slate-900">0</div>
+            </div>
+            
+            <div class="cyber-hud p-2 md:p-3 text-center border-b-4 border-b-[var(--cyber-pink)] mx-2">
+                <div class="text-[10px] md:text-xs font-bold text-slate-500">ภารกิจตามล่าฮาร์ดแวร์</div>
+                <div id="target-display" class="text-base md:text-xl font-bold text-[var(--cyber-pink)]">กำลังโหลดโจทย์...</div>
+            </div>
+
+            <div class="cyber-hud p-3 md:p-4 min-w-[120px] md:min-w-[140px] text-right text-slate-800">
+                <div class="text-[10px] md:text-xs font-bold text-slate-500 tracking-wider">TIME</div>
+                <div id="time-display" class="text-2xl md:text-3xl font-cyber font-black text-slate-900">60</div>
+            </div>
+        </div>
+
+        <div id="start-screen" class="interactive absolute inset-0 flex flex-col items-center justify-center bg-slate-900 bg-opacity-85 z-50 p-4">
+            <div class="text-center max-w-xl p-6 md:p-8 bg-white rounded-2xl border-4 border-[var(--cyber-bright-neon)] shadow-2xl">
+                <h1 class="text-3xl md:text-5xl font-cyber font-black text-slate-900 mb-2">HARDWARE HUNTER</h1>
+                <p class="text-sm font-bold text-[var(--cyber-bright-neon)] bg-slate-900 py-1 px-3 rounded inline-block font-cyber mb-6 tracking-widest">TECHNOLOGY COMPUTER</p>
+                
+                <p class="text-slate-600 mb-6 font-medium text-sm md:text-base">
+                    ใช้ฝ่ามือสัมผัสอุปกรณ์ฮาร์ดแวร์ให้ตรงกับโจทย์ที่ได้รับ<br>
+                    <span class="text-amber-600 font-bold mt-2 inline-block"><i class="fas fa-hand-paper"></i> โปรดถอยห่างจากกล้องเพื่อให้ AI เห็นฝ่ามือชัดเจน</span>
+                </p>
+                
+                <div id="loading-box" class="flex flex-col items-center justify-center py-4">
+                    <i class="fas fa-microchip fa-spin text-4xl text-[var(--cyber-pink)] mb-3"></i>
+                    <p class="text-slate-700 font-bold animate-pulse">กำลังโหลด AI Model...</p>
+                </div>
+
+                <button id="btn-start" class="btn-cyber-start hidden" onclick="Game.start()">START SCAN</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. DATA & CLASSES
+        // ==========================================
+        const HARDWARE_POOL = [
+            { name: 'CPU', type: 'PROCESSING', icon: '\uf2db', color: '#ff0055' },
+            { name: 'RAM', type: 'STORAGE', icon: '\uf538', color: '#00ccff' },
+            { name: 'SSD / HDD', type: 'STORAGE', icon: '\uf0a0', color: '#00ffaa' },
+            { name: 'Mouse', type: 'INPUT', icon: '\uf8cc', color: '#ffbb00' },
+            { name: 'Keyboard', type: 'INPUT', icon: '\uf11c', color: '#aa00ff' },
+            { name: 'Monitor', type: 'OUTPUT', icon: '\uf108', color: '#ff5500' },
+            { name: 'Printer', type: 'OUTPUT', icon: '\uf02f', color: '#eeff00' }
+        ];
+
+        const MISSIONS = ['INPUT', 'OUTPUT', 'STORAGE', 'PROCESSING'];
+
+        class FallingItem {
+            constructor(canvasW) {
+                const sample = HARDWARE_POOL[Math.floor(Math.random() * HARDWARE_POOL.length)];
+                this.name = sample.name; this.type = sample.type;
+                this.icon = sample.icon; this.color = sample.color;
+                
+                this.radius = 45; // ขยายขนาดไอเทมเล็กน้อย
+                this.x = Math.random() * (canvasW - this.radius * 3) + (this.radius * 1.5);
+                this.y = -80;
+                this.speed = Math.random() * 2.5 + 2; 
+            }
+            update() { this.y += this.speed; }
+            draw(ctx) {
+                ctx.save(); ctx.translate(this.x, this.y);
+                
+                // กรอบโฮโลแกรม
+                ctx.shadowBlur = 10; ctx.shadowColor = this.color;
+                ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+                ctx.strokeStyle = this.color; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+
+                // ไอคอน
+                ctx.shadowBlur = 0; ctx.fillStyle = "#1e293b";
+                ctx.font = "900 35px 'Font Awesome 6 Free'";
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(this.icon, 0, -8);
+
+                // ชื่อ
+                ctx.fillStyle = this.color; ctx.font = "bold 14px 'Kanit'";
+                ctx.fillText(this.name, 0, 24);
+                ctx.restore();
+            }
+        }
+
+        // เอฟเฟกต์ตัวเลขคะแนนเด้งขึ้นมา
+        class FloatingText {
+            constructor(x, y, text, color) {
+                this.x = x; this.y = y; this.text = text; this.color = color;
+                this.life = 1.0; this.vy = -1.5;
+            }
+            update() { this.y += this.vy; this.life -= 0.03; }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.font = "900 30px 'Orbitron', 'Kanit'";
+                ctx.shadowBlur = 4; ctx.shadowColor = "#fff";
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.restore();
+            }
+        }
+
+        // ==========================================
+        // 2. GAME ENGINE
+        // ==========================================
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const videoElement = document.getElementById('video-layer');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const Game = {
+            isActive: false, score: 0, timeLeft: 60, currentMission: '',
+            items: [], texts: [],
+            pointer: { x: -100, y: -100, active: false },
+            timerInterval: null, missionInterval: null,
+
+            start: function() {
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('hud-top').classList.remove('hidden');
+                
+                this.isActive = true; this.score = 0; this.timeLeft = 60;
+                this.items = []; this.texts = [];
+                this.changeMission();
+
+                document.getElementById('score-display').innerText = this.score;
+                document.getElementById('time-display').innerText = this.timeLeft;
+
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('time-display').innerText = this.timeLeft;
+                    if(this.timeLeft <= 0) this.endGame();
+                }, 1000);
+
+                this.missionInterval = setInterval(() => { this.changeMission(); }, 12000);
+            },
+
+            changeMission: function() {
+                let newMission;
+                // สุ่มโจทย์ใหม่ที่ไม่ซ้ำกับโจทย์เดิม
+                do { newMission = MISSIONS[Math.floor(Math.random() * MISSIONS.length)]; } 
+                while (newMission === this.currentMission && MISSIONS.length > 1);
+                
+                this.currentMission = newMission;
+                document.getElementById('target-display').innerText = `จับ: ${this.currentMission} Device`;
+                
+                // เอฟเฟกต์กระพริบตอนเปลี่ยนโจทย์
+                const targetDisplay = document.getElementById('target-display');
+                targetDisplay.classList.add('animate-bounce');
+                setTimeout(() => targetDisplay.classList.remove('animate-bounce'), 1000);
+            },
+
+            // [อัปเดตแกนหลัก] ระบบตรวจสอบการชนที่ขยายรัศมีกว้างขึ้น
+            checkCollision: function(item) {
+                if (!this.pointer.active) return false;
+                const dist = Math.sqrt(Math.pow(this.pointer.x - item.x, 2) + Math.pow(this.pointer.y - item.y, 2));
+                // ขยายรัศมี hitbox จาก 20 เป็น 50 เพื่อให้ชนง่ายขึ้นมาก
+                return dist < (item.radius + 50); 
+            },
+
+            endGame: function() {
+                this.isActive = false;
+                clearInterval(this.timerInterval); clearInterval(this.missionInterval);
+                setTimeout(() => {
+                    alert(`หมดเวลา! ภารกิจเสร็จสิ้น\nคุณทำได้ทั้งหมด: ${this.score} คะแนน`);
+                    location.reload();
+                }, 100);
+            },
+
+            loop: function() {
+                requestAnimationFrame(() => this.loop());
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (!this.isActive) return;
+
+                // สุ่มปล่อยไอเทม
+                if (Math.random() < 0.025) this.items.push(new FallingItem(canvas.width));
+
+                // อัปเดต Floating Texts (ตัวเลขคะแนนเด้ง)
+                for (let i = this.texts.length - 1; i >= 0; i--) {
+                    let t = this.texts[i]; t.update(); t.draw(ctx);
+                    if (t.life <= 0) this.texts.splice(i, 1);
+                }
+
+                // อัปเดตไอเทมฮาร์ดแวร์
+                for (let i = this.items.length - 1; i >= 0; i--) {
+                    let item = this.items[i];
+                    item.update();
+                    item.draw(ctx);
+
+                    if (this.checkCollision(item)) {
+                        if (item.type === this.currentMission) {
+                            this.score += 10;
+                            this.texts.push(new FloatingText(item.x, item.y, "+10", "#00ffaa"));
+                        } else {
+                            this.score = Math.max(0, this.score - 5);
+                            this.texts.push(new FloatingText(item.x, item.y, "-5", "#ff0055"));
+                        }
+                        document.getElementById('score-display').innerText = this.score;
+                        this.items.splice(i, 1); // ลบไอเทมทิ้งทันทีเมื่อชน
+                        continue;
+                    }
+
+                    if (item.y > canvas.height + 100) this.items.splice(i, 1);
+                }
+
+                // วาดเป้าเล็งสีฟ้าที่ตามฝ่ามือ
+                if (this.pointer.active) {
+                    ctx.save();
+                    ctx.shadowBlur = 15; ctx.shadowColor = "#00ffff";
+                    ctx.strokeStyle = "#00ffff"; ctx.fillStyle = "rgba(0, 255, 255, 0.4)";
+                    ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.arc(this.pointer.x, this.pointer.y, 30, 0, Math.PI * 2);
+                    ctx.fill(); ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(this.pointer.x - 40, this.pointer.y); ctx.lineTo(this.pointer.x + 40, this.pointer.y);
+                    ctx.moveTo(this.pointer.x, this.pointer.y - 40); ctx.lineTo(this.pointer.x, this.pointer.y + 40);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        };
+
+        Game.loop();
+
+        // ==========================================
+        // 3. AI HAND TRACKING & CALIBRATION
+        // ==========================================
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.6 });
+
+        hands.onResults((results) => {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                const rawX = landmarks[9].x; // จุดข้อต่อกลางมือ
+                const rawY = landmarks[9].y;
+                
+                // [อัปเดตแกนหลัก] ระบบคำนวณชดเชยสัดส่วนหน้าจอ (Aspect Ratio Calibration)
+                // แก้ปัญหาเป้าเล็งสีฟ้าไม่ตรงกับตำแหน่งมือจริงเมื่อหน้าจอไม่ใช่ 16:9
+                const videoRatio = 1280 / 720;
+                const windowRatio = window.innerWidth / window.innerHeight;
+                let drawWidth, drawHeight, offsetX, offsetY;
+
+                if (windowRatio > videoRatio) {
+                    drawWidth = window.innerWidth;
+                    drawHeight = window.innerWidth / videoRatio;
+                    offsetX = 0;
+                    offsetY = -(drawHeight - window.innerHeight) / 2;
+                } else {
+                    drawHeight = window.innerHeight;
+                    drawWidth = window.innerHeight * videoRatio;
+                    offsetX = -(drawWidth - window.innerWidth) / 2;
+                    offsetY = 0;
+                }
+
+                // สลับแกน X (กระจกเงา) และคำนวณตำแหน่งใหม่
+                Game.pointer.x = ((1 - rawX) * drawWidth) + offsetX;
+                Game.pointer.y = (rawY * drawHeight) + offsetY;
+                Game.pointer.active = true;
+            } else {
+                Game.pointer.active = false;
+            }
+        });
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({image: videoElement}); },
+            width: 1280, height: 720
+        });
+
+        camera.start().then(() => {
+            document.getElementById('loading-box').classList.add('hidden');
+            document.getElementById('btn-start').classList.remove('hidden');
+        }).catch(err => {
+            alert("ไม่สามารถเข้าถึงกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้องในเบราว์เซอร์");
+        });
+    </script>
+</body>
+</html>
